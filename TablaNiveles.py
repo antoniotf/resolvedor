@@ -4,27 +4,27 @@
 niveles =[]
 
 level_0 = [
-"XXXXX X   X XXXX"
-"  X   X   X X   "
+"abcdefghijklmno "
+"QRSTUVW   X X   "
 "  X   XXXXX XXX "
 "  X   X   X X   "
 "  X   X   X XXXX"
 "                "
-"XXXX X   X XXX  "
+"XXXXPX   X XXX  "
 "X    XX  X X  X "
 "XXX  X X X X  X "
-"X    X  XX X  X "
-"XXXX X   X XXX  "
+"X    X  XX X  XE"
+"ULTIMA   X XXFIN"
 ]
 
-level_1 = [
+level_5 = [
 "      XXX       "
 "   XXXXEXXXX    "
 " XXX @ @   XXX  "
 "XX    @@@ @  XX "
 "X@ @ @ @   @ @X "
 "X@  @ @@@@@  @X "
-"X@@@ @ P@  @@@X "
+"X@@@P@  @  @@@X "
 "XXXXXXXXXXXXXXX "
 "                "
 "                "
@@ -73,7 +73,7 @@ level_4 = [
 "                "
 ]
 
-level_5 = [
+level_1 = [
 "        X       "
 "       XEX      "
 "      X   X     "
