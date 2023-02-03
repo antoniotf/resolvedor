@@ -9,10 +9,6 @@ cadenaNivel = list(level_1[0])
 lapiz = turtle.Turtle()
 
 
-
-
-
-
 class Estado_Regilla():
     def __init__(self):
         cadenaNivel = list(level_1[0])
@@ -136,22 +132,28 @@ def primera_generacion(cantidad_individuos):
     global cadenaNivel
     global cromosoma
     cadenaNivel = list(level_1[0])
-    cantidad_movimientos = 35
-    cantidad_individuos_seleccionados = 100000
+    cantidad_movimientos = 17
+    cantidad_individuos_seleccionados = 100
     listado_generacion_0 =[]
     cromosoma =[]
     cromosoma.clear()
+    mejor_fitness = 999
     for i in range (cantidad_individuos):
         for x in range (cantidad_movimientos):
             mov_aleatorio = random.randint(1,4)
             while estado_regilla.mover(mov_aleatorio) == False:
                 mov_aleatorio = random.randint(1, 4)
             cromosoma.append(mov_aleatorio)
+            ultimo_fitness = fitness()
+            if ultimo_fitness < mejor_fitness:
+                mejor_fitness = ultimo_fitness
             #redibujar_pantalla()
-        cromosoma.append(fitness())
+        cromosoma.append(mejor_fitness)
         listado_generacion_0.append(cromosoma.copy())
         cromosoma.clear()
         cadenaNivel = list(level_1[0])
+        ultimo_fitness = 999
+        mejor_fitness = 999
         #print("individuos creados =", i)
     #cromosoma.clear()
     listado_generacion_0.sort(key=lambda l: l[cantidad_movimientos], reverse=False)
@@ -160,7 +162,6 @@ def primera_generacion(cantidad_individuos):
     print("Generación cero creada: cromosoma 1= ", listado_generacion_0[1])
     print("Generación cero creada: cromosoma 1= ", listado_generacion_0[3])
     print("generación 0 completa :", listado_generacion_0)
-
 
 
 
@@ -185,39 +186,92 @@ def fitness():
             print("Repite solucion en 10 segundos")
             ejecuta_cromosoma(cromosoma)
             print("Repite solucion en 10 segundos")
+    if pasos_distancia == 0:
+        print ("ENCONTRADO FITNESS = 0")
+
     return pasos_distancia
+
+def fitnessV2(cromosoma): # ejecuta los movimientos y devuelve el maximo fitness
+    global cadenaNivel
+    cadenaNivel = list(level_1[0])
+    mejor_fitness =999
+    ultimo_fitness = 999
+    for x in cromosoma:
+        estado_regilla.actualizar()
+        redibujar_pantalla()
+        estado_regilla.mover(x)
+        print("moviendo  = ",x)
+        estado_regilla.actualizar()
+        ycor_personaje = int(cadenaNivel.index('P')/16)
+        xcor_personaje =cadenaNivel.index('P') - (ycor_personaje * 16)
+        ycor_meta = int(cadenaNivel.index('E') / 16)
+        xcor_meta = cadenaNivel.index('E') - (ycor_meta * 16)
+        distanciaX = abs(xcor_personaje-xcor_meta)
+        distanciaY = abs(ycor_personaje - ycor_meta)
+        pasos_distancia = distanciaY+distanciaX
+        ultimo_fitness = pasos_distancia
+        if ultimo_fitness < mejor_fitness:
+            mejor_fitness = ultimo_fitness
+        if pasos_distancia == 1:
+            while True:
+                print (" RESUELTO !!!!!!!")
+                print("cromosoma = ", cromosoma)
+                ejecuta_cromosoma(cromosoma)
+                print("Repite solucion en 10 segundos")
+                ejecuta_cromosoma(cromosoma)
+                print("Repite solucion en 10 segundos")
+                ejecuta_cromosoma(cromosoma)
+                print("Repite solucion en 10 segundos")
+    if pasos_distancia == 0:
+        print ("ENCONTRADO FITNESS = 0")
+
+    return mejor_fitness
 
 def ejecuta_cromosoma(cromosoma_pasado): # funcion para visualizar los movimientos de un cromosoma dado.
     global cadenaNivel
     cadenaNivel = list(level_1[0])
     for x in cromosoma_pasado:
         redibujar_pantalla()
-        #time.sleep(0.1)
+        time.sleep(0.1)
         estado_regilla.mover(x)
 
 def cruce_generacional():
     global listado_generacion_1
     global cadenaNivel
+    cadenaNivel = list(level_1[0])
     listado_generacion_1 = []
     cadenaGenes=[]
-    for x in range(0, len(listado_generacion_0), 2):
+    ultimo_fitnes =999
+    mejor_fitnes =999
+    print("Creando cruces de ", len(listado_generacion_0)," generaciones")
+    for x in range(0, len(listado_generacion_0)-1, 2):
         print(x)
         for i in range(len(listado_generacion_0[x])-1):
             if random.randint(0,100)< 90: #gen el 50% del padre y 50% de la madre.
                 cadenaGenes.append(listado_generacion_0[x][i])
                 estado_regilla.mover(listado_generacion_0[x][i])
+                estado_regilla.actualizar()
             else:
                 cadenaGenes.append(listado_generacion_0[x+1][i])
                 estado_regilla.mover(listado_generacion_0[x+1][i])
-        cadenaGenes.append(fitness())
+                estado_regilla.actualizar()
+            ultimo_fitnes = fitness()
+            print("ultimo_fitnes =",ultimo_fitnes)
+            print("mejor_fitnes =", mejor_fitnes)
+            if ultimo_fitnes < mejor_fitnes:
+                mejor_fitnes = ultimo_fitnes
+        print("campo de fitness = ", mejor_fitnes, " para individuo ", x)
+        cadenaGenes.append(mejor_fitnes)
         print("padre =",listado_generacion_0[x])
         print("madre =", listado_generacion_0[x+1])
         print("hijo  =", cadenaGenes)
         listado_generacion_1.append(cadenaGenes.copy())
         cadenaGenes.clear()
         campo_de_fitness = len(listado_generacion_1[0])-1
-        print("campo de fitness = ", campo_de_fitness)
         cadenaNivel = list(level_1[0])
+        ultimo_fitness = 999
+        mejor_fitness = 999
+        print(" reseteo de fintes mejor y ultimo a ",mejor_fitness,ultimo_fitness)
 
     listado_generacion_1.sort(key=lambda l: l[campo_de_fitness], reverse=False)
     del listado_generacion_1[10:x]
@@ -253,7 +307,10 @@ print("nuevo estado =", cadenaNivel)
 
 #redibujar_pantalla()
 
-primera_generacion(100000)
+#ejecuta_cromosoma([1, 1, 3, 4, 1, 4, 3, 3, 4, 3, 3, 1, 3, 1, 1, 0])
+#print("fintes para ese = ",fitnessV2([1, 1, 1, 4, 4, 1, 1, 1, 4, 1, 1, 3, 3, 1, 4, 3, 1, 2]))
+
+primera_generacion(1000)
 cruce_generacional()
 
 
@@ -271,9 +328,7 @@ for x in listado_generacion_0[0]:
     estado_regilla.mover(x)
 print("FINALIZADO")
 '''
-print("0 mod 16 ", 0 % 16)
-print("1 mod 16 ", 1 % 16)
-print("2 mod 16 ", 1 % 16)
+print("FINALIZADO PROGRAMA")
 
 
 
