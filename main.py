@@ -8,7 +8,6 @@ cadenaNivel = list(level_1[0])
 
 lapiz = turtle.Turtle()
 
-
 class Estado_Regilla():
     def __init__(self):
         cadenaNivel = list(level_1[0])
@@ -128,40 +127,40 @@ def redibujar_pantalla():
 
 def primera_generacion(cantidad_individuos):
     print("creando generacion cero con ", cantidad_individuos," individuos")
-    global listado_generacion_0
+    global listado_cromosomas
     global cadenaNivel
     global cromosoma
     cadenaNivel = list(level_1[0])
-    cantidad_movimientos = 17
-    cantidad_individuos_seleccionados = 100
-    listado_generacion_0 =[]
+    cantidad_movimientos = 30
+    cantidad_individuos_seleccionados = 1000
+    listado_cromosomas =[]
     cromosoma =[]
     cromosoma.clear()
-    mejor_fitness = 999
     for i in range (cantidad_individuos):
         for x in range (cantidad_movimientos):
             mov_aleatorio = random.randint(1,4)
+
             while estado_regilla.mover(mov_aleatorio) == False:
                 mov_aleatorio = random.randint(1, 4)
             cromosoma.append(mov_aleatorio)
-            ultimo_fitness = fitness()
-            if ultimo_fitness < mejor_fitness:
-                mejor_fitness = ultimo_fitness
             #redibujar_pantalla()
-        cromosoma.append(mejor_fitness)
-        listado_generacion_0.append(cromosoma.copy())
+        cromosoma.append(fitnessV2(cromosoma))
+        listado_cromosomas.append(cromosoma.copy())
         cromosoma.clear()
         cadenaNivel = list(level_1[0])
         ultimo_fitness = 999
         mejor_fitness = 999
+        if i % 10000 == 0:
+            print("Creados ",i," individuos de ", cantidad_individuos, "(", i/cantidad_individuos *100 ,"%)")
+
         #print("individuos creados =", i)
-    #cromosoma.clear()
-    listado_generacion_0.sort(key=lambda l: l[cantidad_movimientos], reverse=False)
-    del listado_generacion_0[cantidad_individuos_seleccionados:cantidad_individuos]
-    print("Generación cero creada: cromosoma 0= ",listado_generacion_0[0])
-    print("Generación cero creada: cromosoma 1= ", listado_generacion_0[1])
-    print("Generación cero creada: cromosoma 1= ", listado_generacion_0[3])
-    print("generación 0 completa :", listado_generacion_0)
+
+    listado_cromosomas.sort(key=lambda l: l[cantidad_movimientos], reverse=False)
+    del listado_cromosomas[cantidad_individuos_seleccionados:cantidad_individuos]
+    print("Generación cero creada: cromosoma 0= ",listado_cromosomas[0])
+    print("Generación cero creada: cromosoma 1= ", listado_cromosomas[1])
+    print("Generación cero creada: cromosoma 9= ", listado_cromosomas[9])
+
 
 
 
@@ -198,9 +197,8 @@ def fitnessV2(cromosoma): # ejecuta los movimientos y devuelve el maximo fitness
     ultimo_fitness = 999
     for x in cromosoma:
         estado_regilla.actualizar()
-        redibujar_pantalla()
+        #redibujar_pantalla()
         estado_regilla.mover(x)
-        print("moviendo  = ",x)
         estado_regilla.actualizar()
         ycor_personaje = int(cadenaNivel.index('P')/16)
         xcor_personaje =cadenaNivel.index('P') - (ycor_personaje * 16)
@@ -235,55 +233,37 @@ def ejecuta_cromosoma(cromosoma_pasado): # funcion para visualizar los movimient
         time.sleep(0.1)
         estado_regilla.mover(x)
 
-def cruce_generacional():
-    global listado_generacion_1
+
+
+def mutaciones(): # Mutar todos los individuos y añadirlos al final de la lista.
+    global listado_cromosomas
     global cadenaNivel
+    cantidad_individuos_seleccionados = 1000
     cadenaNivel = list(level_1[0])
-    listado_generacion_1 = []
-    cadenaGenes=[]
-    ultimo_fitnes =999
-    mejor_fitnes =999
-    print("Creando cruces de ", len(listado_generacion_0)," generaciones")
-    for x in range(0, len(listado_generacion_0)-1, 2):
-        print(x)
-        for i in range(len(listado_generacion_0[x])-1):
-            if random.randint(0,100)< 90: #gen el 50% del padre y 50% de la madre.
-                cadenaGenes.append(listado_generacion_0[x][i])
-                estado_regilla.mover(listado_generacion_0[x][i])
-                estado_regilla.actualizar()
+    cadenaGenes = []
+    generacion_mutada =[]
+    probabilidad_de_mutacion_para_esta_generacion = random.randint(1,99)
+    for x in range(0, len(listado_cromosomas)):
+        for i in range(len(listado_cromosomas[x]) - 1):
+            if random.randint(0, 100) > probabilidad_de_mutacion_para_esta_generacion:  # gen muta x % probabilidades, incluso movimientos no validos.
+                mutacion_aleatoria = random.randint(1,4)
+                cadenaGenes.append(mutacion_aleatoria)
             else:
-                cadenaGenes.append(listado_generacion_0[x+1][i])
-                estado_regilla.mover(listado_generacion_0[x+1][i])
-                estado_regilla.actualizar()
-            ultimo_fitnes = fitness()
-            print("ultimo_fitnes =",ultimo_fitnes)
-            print("mejor_fitnes =", mejor_fitnes)
-            if ultimo_fitnes < mejor_fitnes:
-                mejor_fitnes = ultimo_fitnes
-        print("campo de fitness = ", mejor_fitnes, " para individuo ", x)
-        cadenaGenes.append(mejor_fitnes)
-        print("padre =",listado_generacion_0[x])
-        print("madre =", listado_generacion_0[x+1])
-        print("hijo  =", cadenaGenes)
-        listado_generacion_1.append(cadenaGenes.copy())
+                cadenaGenes.append(listado_cromosomas[x][i])
+
+
+        cadenaGenes.append(fitnessV2(cadenaGenes))
+        generacion_mutada.append(cadenaGenes.copy())
         cadenaGenes.clear()
-        campo_de_fitness = len(listado_generacion_1[0])-1
+        campo_de_fitness = len(listado_cromosomas[0]) - 1
         cadenaNivel = list(level_1[0])
         ultimo_fitness = 999
         mejor_fitness = 999
-        print(" reseteo de fintes mejor y ultimo a ",mejor_fitness,ultimo_fitness)
 
-    listado_generacion_1.sort(key=lambda l: l[campo_de_fitness], reverse=False)
-    del listado_generacion_1[10:x]
-    print("nueva generacion 1 ordenada =", listado_generacion_1)
-
-    '''
-    for x in listado_generacion_1:
-        ejecuta_cromosoma(x)
-        print("ejecutado cromosoma ", x," de ", len(listado_generacion_1))
-        time.sleep(1)
-    '''
-
+    listado_cromosomas.extend(generacion_mutada.copy())
+    listado_cromosomas.sort(key=lambda l: l[campo_de_fitness], reverse=False)
+    del listado_cromosomas[cantidad_individuos_seleccionados:len(listado_cromosomas)]
+    # del listado_generacion_1[10:x]
 
 
 
@@ -307,11 +287,29 @@ print("nuevo estado =", cadenaNivel)
 
 #redibujar_pantalla()
 
-#ejecuta_cromosoma([1, 1, 3, 4, 1, 4, 3, 3, 4, 3, 3, 1, 3, 1, 1, 0])
-#print("fintes para ese = ",fitnessV2([1, 1, 1, 4, 4, 1, 1, 1, 4, 1, 1, 3, 3, 1, 4, 3, 1, 2]))
+ejecuta_cromosoma([1, 1, 2, 1, 1, 4, 4, 3, 3, 4, 4, 1, 1, 4, 3, 1, 1, 1, 3, 1, 3, 3, 1, 1, 2, 1, 4, 4, 1])
+#print("fintes para ese = ",fitnessV2([4, 1, 3, 3, 4, 4, 2, 1, 3, 3, 1, 4, 2, 2, 1]))
 
-primera_generacion(1000)
-cruce_generacional()
+'''
+primera_generacion(200000)
+
+for x in range (10000):
+    mutaciones()
+    if x % 1000 == 0:
+        #print ("despues de primera mutacion listado_cromosomas= ",listado_cromosomas)
+        print(" cantidad indivicuos en  listado_cromosomas",  len(listado_cromosomas))
+        print ("despues de", x," mutaciones cromosoma 0 = ", listado_cromosomas[0])
+        print("despues de", x, " mutaciones cromosoma 1 = ", listado_cromosomas[1])
+        print("despues de", x, " mutaciones cromosoma 2 = ", listado_cromosomas[2])
+        print("despues de", x, " mutaciones cromosoma 9 = ", listado_cromosomas[9])
+        print("despues de", x, " mutaciones cromosoma 18 = ", listado_cromosomas[18])
+        print("despues de", x, " mutaciones cromosoma 100 = ", listado_cromosomas[100])
+        print("despues de", x, " mutaciones cromosoma 500 = ", listado_cromosomas[500])
+        print("despues de", x, " mutaciones cromosoma 900 = ", listado_cromosomas[900])
+
+
+
+#print (len(listado_generacion_0)," se esperan 1500")
 
 
 
@@ -320,7 +318,7 @@ cruce_generacional()
 
 
 # prueba movimientos segun indice
-'''
+
 for x in listado_generacion_0[0]:
     print (x)
     time.sleep(0.1)
